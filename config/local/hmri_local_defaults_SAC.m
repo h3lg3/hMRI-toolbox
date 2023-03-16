@@ -50,7 +50,7 @@ global hmri_def
 %--------------------------------------------------------------------------
 % The coregistration step can be disabled using the following flag (not
 % recommended). ADVANCED USER ONLY. 
-hmri_def.coreg2PDw = 1*0; 
+hmri_def.coreg2PDw = 1*0;   % HH
 
 
 %--------------------------------------------------------------------------
@@ -75,7 +75,7 @@ hmri_def.R2sOLS = true;
 %                            estimates; very slow, even with
 %                            parallelization over voxels. Recommend WLS1
 %                            instead)
-hmri_def.R2s_fit_method = 'OLS';
+hmri_def.R2s_fit_method = 'WLS1'; % HH 'OLS'
 
 %--------------------------------------------------------------------------
 % Threshold values for qMRI maps
@@ -91,7 +91,7 @@ hmri_def.R2s_fit_method = 'OLS';
 hmri_def.qMRI_maps_thresh.R1       = 2000*10; % 1000*[s-1]
 hmri_def.qMRI_maps_thresh.A        = 10^10; % [a.u.] based on input images with intensities ranging approx. [0 4096].
 hmri_def.qMRI_maps_thresh.R2s      = 10;   % 1000*[s-1]
-hmri_def.qMRI_maps_thresh.MTR      = 50*10;
+hmri_def.qMRI_maps_thresh.MTR      = 50*10; % HH
 hmri_def.qMRI_maps_thresh.MTR_synt = 50*10;
 hmri_def.qMRI_maps_thresh.MT       = 5*10;    % [p.u.]
 
