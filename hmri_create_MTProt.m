@@ -781,10 +781,11 @@ if (mpm_params.QA.enable||(PDproc.calibr)) && (PDwidx && T1widx)
     
     % The 5 outer voxels in all directions are nulled in order to remove
     % artefactual effects from the MT map on segmentation: 
-    MTtemp(1:5,:,:)=0; MTtemp(end-5:end,:,:)=0;
-    MTtemp(:,1:5,:)=0; MTtemp(:,end-5:end,:)=0;
-    MTtemp(:,:,1:5)=0; MTtemp(:,:,end-5:end)=0;
-    
+%     MTtemp(1:5,:,:)=0; MTtemp(end-5:end,:,:)=0;   % HH only 3 slices available
+%     MTtemp(:,1:5,:)=0; MTtemp(:,end-5:end,:)=0;
+%     MTtemp(:,:,1:5)=0; MTtemp(:,:,end-5:end)=0;
+
+
     % Null very bright and negative voxels
     MTtemp(abs(MTtemp)==threshMT)=0;
     MTtemp(isinf(MTtemp))=0;
