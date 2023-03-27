@@ -781,9 +781,9 @@ if (mpm_params.QA.enable||(PDproc.calibr)) && (PDwidx && T1widx)
     
     % The 5 outer voxels in all directions are nulled in order to remove
     % artefactual effects from the MT map on segmentation: 
-%     MTtemp(1:5,:,:)=0; MTtemp(end-5:end,:,:)=0;   % HH only 3 slices available
-%     MTtemp(:,1:5,:)=0; MTtemp(:,end-5:end,:)=0;
-%     MTtemp(:,:,1:5)=0; MTtemp(:,:,end-5:end)=0;
+    MTtemp(1:5,:,:)=0; MTtemp(end-5:end,:,:)=0;
+    MTtemp(:,1:5,:)=0; MTtemp(:,end-5:end,:)=0;
+    MTtemp(:,:,1:5)=0; MTtemp(:,:,end-5:end)=0;
 
 
     % Null very bright and negative voxels
@@ -1622,7 +1622,12 @@ p(nN) = struct('tr',[],'te',[],'fa',[]);
 
 for ii = 1:numel(N)
     p(ii).tr = get_metadata_val(P(ii,:),'RepetitionTime');
-    p(ii).te = get_metadata_val(P(ii,:),'EchoTime');
+    if isempty(get_metadata_val(P(ii,:),'EchoTime'))
+        sprintf('Searching for EffectiveEchoTime in the extended header')
+        p(ii).te = get_metadata_val(P(ii,:),'EffectiveEchoTime');
+    else
+        p(ii).te = get_metadata_val(P(ii,:),'EchoTime');
+    end
     p(ii).fa = get_metadata_val(P(ii,:),'FlipAngle');
 end
 

@@ -45,22 +45,6 @@ global hmri_def
 % R1/PD/R2s/MT map creation parameters
 %==========================================================================
 
-%--------------------------------------------------------------------------
-% Coregistration of all input images to the average (or TE=0 fit) PDw image
-%--------------------------------------------------------------------------
-% The coregistration step can be disabled using the following flag (not
-% recommended). ADVANCED USER ONLY. 
-hmri_def.coreg2PDw = 1*0;   % HH
-
-
-%--------------------------------------------------------------------------
-% Ordinary Least Squares & fit at TE=0
-%--------------------------------------------------------------------------
-% Create a Least Squares R2* map. The ESTATICS model is applied
-% to calculate a common R2* map from all available contrasts. 
-% ADVANCED USER ONLY.
-hmri_def.R2sOLS = true; 
-
 % Choose method of R2* fitting; this is a trade-off between speed and
 % accuracy.
 % - 'OLS' (classic ESTATICS ordinary least squares model; fast but not as 
@@ -75,7 +59,30 @@ hmri_def.R2sOLS = true;
 %                            estimates; very slow, even with
 %                            parallelization over voxels. Recommend WLS1
 %                            instead)
-hmri_def.R2s_fit_method = 'WLS1'; % HH 'OLS'
+hmri_def.R2s_fit_method = 'WLS1'; % HH 'OLS' 'WLS1'
+
+%--------------------------------------------------------------------------
+% PD maps processing parameters
+% ADVANCED USER ONLY.
+%--------------------------------------------------------------------------
+hmri_def.PDproc.calibr    = 0;   % Calibration of the PD map (if PDw, T1w, 
+    % B1map available and RF sensitivity bias correction applied somehow)
+    % based on PD(WM) = 69% [Tofts 2003]. 
+
+
+%--------------------------------------------------------------------------
+% quantitative maps: quality evaluation and realignment to MNI
+%--------------------------------------------------------------------------
+% creates a matlab structure containing markers of data quality
+hmri_def.qMRI_maps.QA          = 0; 
+
+% settings for JSON metadata: by default, separate JSON files are used to
+% store the metadata (information on data acquisition and processing,
+% tracking of input and output files), as JSON-formatted, tab-indented
+% text. The following settings are recommended. No modification currently
+% foreseen as useful...
+hmri_def.json = struct('extended',true,'separate',true,'anonym','none',...
+    'overwrite',true, 'indent','\t'); 
 
 %--------------------------------------------------------------------------
 % Threshold values for qMRI maps
@@ -88,11 +95,6 @@ hmri_def.R2s_fit_method = 'WLS1'; % HH 'OLS'
 % the statistical results.
 % ADVANCED USER ONLY.
 %--------------------------------------------------------------------------
-hmri_def.qMRI_maps_thresh.R1       = 2000*10; % 1000*[s-1]
-hmri_def.qMRI_maps_thresh.A        = 10^10; % [a.u.] based on input images with intensities ranging approx. [0 4096].
-hmri_def.qMRI_maps_thresh.R2s      = 10;   % 1000*[s-1]
-hmri_def.qMRI_maps_thresh.MTR      = 50*10; % HH
-hmri_def.qMRI_maps_thresh.MTR_synt = 50*10;
-hmri_def.qMRI_maps_thresh.MT       = 5*10;    % [p.u.]
-
+hmri_def.qMRI_maps_thresh.R1       = 2000*5; % 1000*[s-1]
+hmri_def.qMRI_maps_thresh.MT       = 20;    % [p.u.] 5*10
 end
