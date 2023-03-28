@@ -1623,7 +1623,7 @@ p(nN) = struct('tr',[],'te',[],'fa',[]);
 for ii = 1:numel(N)
     p(ii).tr = get_metadata_val(P(ii,:),'RepetitionTime');
     if isempty(get_metadata_val(P(ii,:),'EchoTime'))
-        sprintf('Searching for EffectiveEchoTime in the extended header')
+        sprintf('WARNING: searching for EffectiveEchoTime in the extended header')
         p(ii).te = get_metadata_val(P(ii,:),'EffectiveEchoTime');
     else
         p(ii).te = get_metadata_val(P(ii,:),'EchoTime');

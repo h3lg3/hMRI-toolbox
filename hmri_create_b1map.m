@@ -543,8 +543,28 @@ P = b1map_params.b1input(2,:); % scaled FA map
 Q = b1map_params.b1input(1,:); % anatomical image
 
 % read header information and volumes
-V1 = spm_vol(P); % image volume information
-V2 = spm_vol(Q);
+if strcmp(P, Q)
+    temp = spm_vol(P);
+    hmri_log(sprintf(...
+        ['WARNING: filename for anatomical and precalculated B1 bias map identical.  \n'...
+        'Assuming multidimensional nifti, with second contrast beeing \n'...
+        'precalculated B1 map']),b1map_params.defflags);
+
+    if numel(temp) > 2
+        hmri_log(sprintf(...
+            ['WARNING: multidimensional nifti for B1 bias map \n'...
+            'with more than 2 contrasts provided.']),b1map_params.defflags);
+    end
+
+    Vo = spm_file_split(temp);
+    V1 = Vo(1);
+    V2 = Vo(2);
+    V2.pinfo = temp(2).pinfo;
+else
+    V1 = spm_vol(P); % image volume information
+    V2 = spm_vol(Q);
+end
+
 input_files = cat(1,{V2.fname},{V1.fname}); % for metadata
 Vol1 = spm_read_vols(V1);
 
@@ -557,7 +577,7 @@ anat_fname = fullfile(outpath, [spm_file(V2.fname, 'basename') '_B1ref.nii']);
 copyfile(V2.fname, anat_fname);
 try copyfile([spm_str_manip(V2.fname,'r') '.json'],[spm_str_manip(anat_fname,'r') '.json']); end %#ok<*TRYNC>
 V2 = spm_vol(anat_fname);
-
+% V2 = spm_vol(['E:\MATLAB\Projekte\SAC\DICOMS\20230324-161603\RF\MF20230324161529STD1312211075993-0013-00001-000001.nii,1'])
 % generating the map
 B1map_norm = (abs(Vol1)+offset)*scaling;
 
