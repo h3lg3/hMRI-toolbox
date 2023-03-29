@@ -1622,8 +1622,9 @@ p(nN) = struct('tr',[],'te',[],'fa',[]);
 
 for ii = 1:numel(N)
     p(ii).tr = get_metadata_val(P(ii,:),'RepetitionTime');
-    if isempty(get_metadata_val(P(ii,:),'EchoTime'))
-        sprintf('WARNING: searching for EffectiveEchoTime in the extended header')
+    if isempty(get_metadata_val(P(ii,:),'EchoTime')) &&...
+            ~isempty(get_metadata_val(P(ii,:),'EffectiveEchoTime'))    % adjust for extended 4D DICOM
+        disp('hmri_create_MTProt: using EffectiveEchoTime from extended header')
         p(ii).te = get_metadata_val(P(ii,:),'EffectiveEchoTime');
     else
         p(ii).te = get_metadata_val(P(ii,:),'EchoTime');

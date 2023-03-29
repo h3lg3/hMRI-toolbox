@@ -547,26 +547,26 @@ if strcmp(P, Q)
     temp = spm_vol(P);
     hmri_log(sprintf(...
         ['WARNING: filename for anatomical and precalculated B1 bias map identical.  \n'...
-        'Assuming multidimensional nifti, with second contrast beeing \n'...
+        'Assuming 4D nifti, with second contrast beeing \n'...
         'precalculated B1 map']),b1map_params.defflags);
 
     if numel(temp) > 2
         hmri_log(sprintf(...
-            ['WARNING: multidimensional nifti for B1 bias map \n'...
+            ['WARNING: 4D nifti for B1 bias map \n'...
             'with more than 2 contrasts provided.']),b1map_params.defflags);
     end
 
-    Vo = spm_file_split(temp);
-    V1 = Vo(1);
-    V2 = Vo(2);
-    V2.pinfo = temp(2).pinfo;
+    Vo = spm_file_split(temp, spm_file(temp(1).fname, 'path'));
+    V2 = Vo(1);         % anatomical image
+    V1 = Vo(2);         % scaled FA map
+    V1.pinfo = temp(2).pinfo;
 else
-    V1 = spm_vol(P); % image volume information
+    V1 = spm_vol(P);    % image volume information
     V2 = spm_vol(Q);
 end
 
 input_files = cat(1,{V2.fname},{V1.fname}); % for metadata
-Vol1 = spm_read_vols(V1);
+Vol1 = spm_read_vols(spm_vol(V1.fname)); % original: Vol1 = spm_read_vols(V1),  changed for compatibility with 4D nifti
 
 % determine output directory path
 outpath = jobsubj.path.b1path;
@@ -577,7 +577,7 @@ anat_fname = fullfile(outpath, [spm_file(V2.fname, 'basename') '_B1ref.nii']);
 copyfile(V2.fname, anat_fname);
 try copyfile([spm_str_manip(V2.fname,'r') '.json'],[spm_str_manip(anat_fname,'r') '.json']); end %#ok<*TRYNC>
 V2 = spm_vol(anat_fname);
-% V2 = spm_vol(['E:\MATLAB\Projekte\SAC\DICOMS\20230324-161603\RF\MF20230324161529STD1312211075993-0013-00001-000001.nii,1'])
+
 % generating the map
 B1map_norm = (abs(Vol1)+offset)*scaling;
 
