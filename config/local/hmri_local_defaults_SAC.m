@@ -40,6 +40,7 @@ function hmri_local_defaults
 % Global hmri_def variable used across the whole toolbox
 global hmri_def
 
+hmri_def.precoreg = 0; % for tMPPCA denoised maps: skip coreg for PD, MT and T1 maps because maps are already coregistered
 
 %==========================================================================
 % R1/PD/R2s/MT map creation parameters
@@ -69,20 +70,11 @@ hmri_def.PDproc.calibr    = 0;   % Calibration of the PD map (if PDw, T1w,
     % B1map available and RF sensitivity bias correction applied somehow)
     % based on PD(WM) = 69% [Tofts 2003]. 
 
-
 %--------------------------------------------------------------------------
 % quantitative maps: quality evaluation and realignment to MNI
 %--------------------------------------------------------------------------
 % creates a matlab structure containing markers of data quality
 hmri_def.qMRI_maps.QA          = 0; 
-
-% settings for JSON metadata: by default, separate JSON files are used to
-% store the metadata (information on data acquisition and processing,
-% tracking of input and output files), as JSON-formatted, tab-indented
-% text. The following settings are recommended. No modification currently
-% foreseen as useful...
-hmri_def.json = struct('extended',true,'separate',true,'anonym','none',...
-    'overwrite',true, 'indent','\t'); 
 
 %--------------------------------------------------------------------------
 % Threshold values for qMRI maps

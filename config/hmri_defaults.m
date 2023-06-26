@@ -35,6 +35,8 @@ function hmri_defaults
 % Global hmri_def variable used across the whole toolbox
 global hmri_def
 
+hmri_def.precoreg = 0; % for tMPPCA denoised maps: skip coreg for PD, MT and T1 maps because maps are already coregistered
+
 % Specifying the research centre - to be customized in the local
 % configuration file (config/local/hmri_local_defaults.m). Not mandatory.
 hmri_def.centre = 'centre' ; 
