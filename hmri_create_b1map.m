@@ -466,16 +466,58 @@ json = hmri_get_defaults('json');
 P = b1map_params.b1input(2,:); % scaled FA map from tfl_b1map sequence
 Q = b1map_params.b1input(1,:); % anatomical image from tfl_b1map sequence
 
-% read header information and volumes
-V1 = spm_vol(P); % image volume information
-V2 = spm_vol(Q);
-Vol1 = spm_read_vols(V1);
-Vol2 = spm_read_vols(V2);
+% HH start
+% % read header information and volumes
+% V1 = spm_vol(P); % image volume information
+% V2 = spm_vol(Q);
+% Vol1 = spm_read_vols(V1);
+% Vol2 = spm_read_vols(V2);
+% 
+% alphanom = get_metadata_val(P,'FlipAngle'); % nominal flip angle of tfl_b1map
+% 
+% % generating the map
+% B1map_norm = abs(Vol1)*10/alphanom;
 
-alphanom = get_metadata_val(P,'FlipAngle'); % nominal flip angle of tfl_b1map
+% read header information and volumes
+if strcmp(P, Q)
+    temp = spm_vol(P);
+    hmri_log(sprintf(...
+        ['WARNING: filename for anatomical and precalculated B1 bias map identical.  \n'...
+        'Assuming 4D nifti, with second contrast beeing \n'...
+        'precalculated B1 map']),b1map_params.defflags);
+
+    if numel(temp) > 2
+        hmri_log(sprintf(...
+            ['WARNING: 4D nifti for B1 bias map \n'...
+            'with more than 2 contrasts provided.']),b1map_params.defflags);
+    end
+
+    Vo = spm_file_split(temp, spm_file(temp(1).fname, 'path'));
+    V2 = Vo(1);         % anatomical image
+    V1 = Vo(2);         % scaled FA map
+    V1.pinfo = temp(2).pinfo;
+else
+    V1 = spm_vol(P);    % image volume information
+    V2 = spm_vol(Q);
+end
+
+input_files = cat(1,{V2.fname},{V1.fname}); % for metadata
+Vol1 = spm_read_vols(spm_vol(V1.fname)); % original: Vol1 = spm_read_vols(V1),  changed for compatibility with 4D nifti
+
+% determine output directory path
+outpath = jobsubj.path.b1path;
+b1map_params.outpath = outpath;
+
+% copy anatomical image to outpath to prevent modification of original data
+anat_fname = fullfile(outpath, [spm_file(V2.fname, 'basename') '_B1ref.nii']);
+copyfile(V2.fname, anat_fname);
+try copyfile([spm_str_manip(V2.fname,'r') '.json'],[spm_str_manip(anat_fname,'r') '.json']); end %#ok<*TRYNC>
+V2 = spm_vol(anat_fname);
 
 % generating the map
-B1map_norm = abs(Vol1)*10/alphanom;
+B1map_norm = (abs(Vol1)+offset)*scaling;
+
+% HH end
 
 % smoothed map
 smB1map_norm = zeros(size(B1map_norm));

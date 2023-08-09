@@ -260,7 +260,8 @@ hmri_log(sprintf('\t-------- Coregistering the images --------'),mpm_params.nopu
 % NOTE: coregistration can be disabled using the hmri_def.coreg2PDw flag
 
 contrastCoregParams = zeros(mpm_params.ncon, 6);
-if mpm_params.coreg
+% if mpm_params.coreg   % HH
+if mpm_params.coreg && ~mpm_params.precoreg
     if MTwidx
         contrastCoregParams(MTwidx,:) = hmri_coreg(Pavg{PDwidx}, Pavg{MTwidx}, mpm_params.coreg_flags);
     end
@@ -1259,6 +1260,9 @@ mpm_params.nopuflags.PopUp = false;
 hmri_log(sprintf('\t------------ PROCESSING PARAMETERS: SETTING UP AND CONSISTENCY CHECK ------------'),mpm_params.nopuflags);
 
 % global parameters
+
+mpm_params.precoreg = hmri_get_defaults('precoreg'); % HH
+
 mpm_params.json = hmri_get_defaults('json');
 mpm_params.centre = hmri_get_defaults('centre');
 mpm_params.calcpath = jobsubj.path.mpmpath;
@@ -1841,9 +1845,21 @@ N = nifti(P);
 nN = numel(N);
 p(nN) = struct('tr',[],'te',[],'fa',[]);
 
+% HH
+% for ii = 1:numel(N)
+%     p(ii).tr = get_metadata_val(P(ii,:),'RepetitionTime');
+%     p(ii).te = get_metadata_val(P(ii,:),'EchoTime');
+%     p(ii).fa = get_metadata_val(P(ii,:),'FlipAngle');
+% end
 for ii = 1:numel(N)
     p(ii).tr = get_metadata_val(P(ii,:),'RepetitionTime');
-    p(ii).te = get_metadata_val(P(ii,:),'EchoTime');
+    if isempty(get_metadata_val(P(ii,:),'EchoTime')) &&...
+            ~isempty(get_metadata_val(P(ii,:),'EffectiveEchoTime'))    % adjust for extended 4D DICOM
+        disp('hmri_create_MTProt: using EffectiveEchoTime from extended header')
+        p(ii).te = get_metadata_val(P(ii,:),'EffectiveEchoTime');
+    else
+        p(ii).te = get_metadata_val(P(ii,:),'EchoTime');
+    end
     p(ii).fa = get_metadata_val(P(ii,:),'FlipAngle');
 end
 

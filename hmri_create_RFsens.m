@@ -37,24 +37,24 @@ json = rfsens_params.json;
 
 % Proceeds for each contrast
 for ccon = 1:rfsens_params.ncon
-    
+
     % Input sensitivity maps: a pair of head coil/body coil sensitivity maps,
     % either acquired once for the whole protocol, or once per contrast (MT,
     % PD, T1):
     sensmaps = rfsens_params.input(ccon).sensfnam;
     % Input MTw, PDw, T1w multiecho images:
     structurals = rfsens_params.input(ccon).fnam;
-    
+
     %==========================================================================
     % Coregistering the images: each sensmap onto the corresponding structural
     %==========================================================================
     coregmaps = coreg_sens_to_struct_images(structurals(1,:), sensmaps, calcpath, rfsens_params.input(ccon).tag);
-    
+
     %==========================================================================
     % Smoothing the coregistered images
     %==========================================================================
     smoothedmaps = smooth_sens_images(coregmaps, smooth_kernel);
-    
+
     %==========================================================================
     % Calculate quantitative RF sensitivity maps (HC/BC division)
     %==========================================================================
@@ -65,13 +65,13 @@ for ccon = 1:rfsens_params.ncon
     Output_hdr = init_rfsens_output_metadata(input_files, rfsens_params);
     Output_hdr.history.output.imtype = sprintf('Quantitative RF sensitivity map (HC/BC) for %sw images',rfsens_params.input(ccon).tag);
     set_metadata(qsensmap,Output_hdr,json);
-    
+
     %==========================================================================
     % Normalise all input multi-echo images using the p.u. sensitivity maps
     %==========================================================================
     nSTRUCT = size(structurals,1);
     corrected_structurals = cell(nSTRUCT,1);
-    
+
     for i=1:nSTRUCT
         corrected_structurals{i} = fullfile(calcpath, spm_file(spm_file(structurals(i,:),'filename'),'suffix','_RFSC'));
         spm_imcalc({structurals(i,:), qsensmap}, corrected_structurals{i}, 'i1./i2');
@@ -80,14 +80,32 @@ for ccon = 1:rfsens_params.ncon
         % might be cleaned up)
         input_files = char(structurals(i,:), sensmaps);
         Output_hdr = init_rfsens_output_metadata(input_files, rfsens_params);
+        % HH
+        %     Output_hdr.history.output.imtype = sprintf('RF sensitivity corrected %s-weighted echo',rfsens_params.input(ccon).tag);
+        %     Output_hdr.history.output.units = 'a.u.';
+        %     Output_hdr.acqpar = struct('RepetitionTime',get_metadata_val(structurals(i,:),'RepetitionTime'), ...
+        %         'EchoTime',get_metadata_val(structurals(i,:),'EchoTime'), ...
+        %         'FlipAngle',get_metadata_val(structurals(i,:),'FlipAngle'));
+        %     set_metadata(corrected_structurals{i},Output_hdr,json);
+        % end
         Output_hdr.history.output.imtype = sprintf('RF sensitivity corrected %s-weighted echo',rfsens_params.input(ccon).tag);
         Output_hdr.history.output.units = 'a.u.';
-        Output_hdr.acqpar = struct('RepetitionTime',get_metadata_val(structurals(i,:),'RepetitionTime'), ...
-            'EchoTime',get_metadata_val(structurals(i,:),'EchoTime'), ...
-            'FlipAngle',get_metadata_val(structurals(i,:),'FlipAngle'));
+
+        if isempty(get_metadata_val(structurals(i,:),'EchoTime')) &&...
+                ~isempty(get_metadata_val(structurals(i,:),'EffectiveEchoTime'))       % adjust for extended 4D DICOM
+            disp('hmri_create_RFsens: using EffectiveEchoTime from extended header')
+            Output_hdr.acqpar = struct('RepetitionTime',get_metadata_val(structurals(i,:),'RepetitionTime'), ...
+                'EchoTime',get_metadata_val(structurals(i,:),'EffectiveEchoTime'), ...
+                'FlipAngle',get_metadata_val(structurals(i,:),'FlipAngle'));
+        else
+            Output_hdr.acqpar = struct('RepetitionTime',get_metadata_val(structurals(i,:),'RepetitionTime'), ...
+                'EchoTime',get_metadata_val(structurals(i,:),'EchoTime'), ...
+                'FlipAngle',get_metadata_val(structurals(i,:),'FlipAngle'));
+        end
+
         set_metadata(corrected_structurals{i},Output_hdr,json);
     end
-    
+
     %==========================================================================
     % Finalise output
     %==========================================================================
@@ -96,7 +114,7 @@ for ccon = 1:rfsens_params.ncon
     try copyfile([spm_str_manip(qsensmap,'r') '.json'],fullfile(supplpath,[spm_file(qsensmap,'basename'), '.json'])); end %#ok<*TRYNC>
     % substitute the corrected maps to the output structure
     jobsubj.raw_mpm.(rfsens_params.input(ccon).tag) = char(corrected_structurals);
-    
+
 end
 
 % save RF sensitivity processing parameters
@@ -115,7 +133,7 @@ function rfsens_params = get_rfsens_params(jobsubj)
 % flags for logging information and warnings
 rfsens_params.defflags = jobsubj.log.flags; % default flags
 rfsens_params.nopuflags = jobsubj.log.flags; % force no Pop-Up
-rfsens_params.nopuflags.PopUp = false; 
+rfsens_params.nopuflags.PopUp = false;
 
 rfsens_params.json = hmri_get_defaults('json');
 rfsens_params.calcpath = jobsubj.path.rfsenspath;
