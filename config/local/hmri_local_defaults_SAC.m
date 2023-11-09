@@ -39,8 +39,14 @@ function hmri_local_defaults
 
 % Global hmri_def variable used across the whole toolbox
 global hmri_def
+%--------------------------------------------------------------------------
+% Coregistration of all input images to the average (or TE=0 fit) PDw image
+%--------------------------------------------------------------------------
+% The coregistration step can be disabled using the following flag (not
+% recommended). ADVANCED USER ONLY. 
+hmri_def.coreg2PDw = 0; 
 
-hmri_def.precoreg = 0; % for tMPPCA denoised maps: skip coreg for PD, MT and T1 maps because maps are already coregistered
+hmri_def.precoreg = 1; % for tMPPCA denoised maps: skip coreg for PD, MT and T1 maps because maps are already coregistered
 
 %==========================================================================
 % R1/PD/R2s/MT map creation parameters
