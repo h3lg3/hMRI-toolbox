@@ -14,12 +14,3 @@ hmri_code_tests/example_data/
 *.nii
 *.pdf
 *.zip
-
-
-hmri_code_tests/hMRI/hmri_sample_dataset_with_maps/Batch_Script_hMRI_Config/Create_Maps_Batch.mat
-hmri_code_tests/hMRI/hmri_sample_dataset_with_maps/Batch_Script_hMRI_Config/hmri_local_defaults.m
-hmri_code_tests/hMRI/hmri_sample_dataset_with_maps/pdw_mfc_3dflash_v1i_R4_0009/Results/_finished_
-hmri_code_tests/hMRI/hmri_sample_dataset_with_maps/pdw_mfc_3dflash_v1i_R4_0009/Results/Supplementary/hMRI_map_creation_logfile.log
-hmri_code_tests/hMRI/README.txt
-
-*.png
