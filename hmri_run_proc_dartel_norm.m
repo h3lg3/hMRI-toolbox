@@ -31,14 +31,13 @@ output = struct('outDir', [], 'option', 'same');
 if isfield(job.output,'outdir') % -> everything in the same
     output.outDir = job.output.outdir{1};
     output.option = 'allin';
-elseif isfield(job.output,'outdir_ps') % -> per subject organization
+elseif isfield(job.output,'outdir_ps') % -> per suject organization
     output.outDir = job.output.outdir_ps{1};
     output.option = 'subjspec';
 end
 feds.output = output;
 
-[~,ver] = spm('Ver');
-if str2double(ver)>=7219
+if str2double(spm('Ver','spm_dartel_norm_fun'))>=7182
     % Knows how to handle output specification
     use_spm_output_handling = true;
 else
