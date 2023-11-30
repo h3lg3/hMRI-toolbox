@@ -86,7 +86,7 @@ function [fR1, fR2s, fMT, fA, PPDw, PT1w, PMTw]  = hmri_create_MTProt(jobsubj) %
 
 flags = jobsubj.log.flags;
 flags.PopUp = false;
-hmri_log(sprintf('\t============ MPM PROCESSING - %s.m (%s) ============', mfilename, datetime('now')),flags);
+hmri_log(sprintf('\t============ MPM PROCESSING - %s.m (%s) ============', mfilename, datestr(now)),flags);
 
 % retrieves all required parameters for MPM processing
 mpm_params = get_mpm_params(jobsubj);
@@ -392,18 +392,11 @@ if mpm_params.proc.R2sOLS && any(mpm_params.estaticsR2s)
                 Ni = hmri_create_nifti(Pte0{ccon}, V_pdw(1), dt, ...
                     sprintf('%s fit to TE=0 for %sw images - %d echoes', mpm_params.R2s_fit_method, mpm_params.input(ccon).tag, length(mpm_params.input(ccon).TE)));
                                 
-                % store processing history in metadata
+                % set metadata
                 input_files = mpm_params.input(ccon).fnam;
                 Output_hdr = init_mpm_output_metadata(input_files, mpm_params);
                 Output_hdr.history.output.imtype = Ni.descrip;
                 Output_hdr.history.output.units = 'a.u.';
-
-                % copy acquisition metadata so extrapolated data could be fed back into 
-                % the toolbox if needed
-                Output_hdr.acqpar = struct('RepetitionTime',mpm_params.input(ccon).TR, ...
-                    'EchoTime',0, ...
-                    'FlipAngle',mpm_params.input(ccon).fa);
-
                 set_metadata(Pte0{ccon},Output_hdr,mpm_params.json);
                 
                 % re-load the updated NIFTI file (in case extended header has
@@ -960,7 +953,7 @@ spm_jsonwrite(fullfile(supplpath,'hMRI_map_creation_mpm_params.json'),mpm_params
 
 spm_progress_bar('Clear');
 
-hmri_log(sprintf('\t============ MPM PROCESSING: completed (%s) ============', datetime('now')),mpm_params.nopuflags);
+hmri_log(sprintf('\t============ MPM PROCESSING: completed (%s) ============', datestr(now)),mpm_params.nopuflags);
 
 
 end
@@ -1016,9 +1009,9 @@ BF = double(spm_read_vols(spm_vol(BFfnam)));
 Y = BF.*spm_read_vols(spm_vol(fA));
 
 % Calibration of flattened A map to % water content using typical white
-% matter value from the hmri_defaults (see hmri_def.PDproc.WMval)
-A_WM = WMmask.*Y; 
-Y = Y/mean(A_WM(A_WM~=0))*PDproc.WMval;
+% matter value from the litterature (69%)
+A_WM = WMmask.*Y;
+Y = Y/mean(A_WM(A_WM~=0))*69;
 hmri_log(sprintf(['INFO (PD calculation):\n\tmean White Matter intensity: %.1f\n' ...
     '\tSD White Matter intensity %.1f\n'],mean(A_WM(A_WM~=0)),std(A_WM(A_WM~=0))), mpm_params.defflags);
 Y(Y>200) = 0;
@@ -1259,9 +1252,7 @@ if mpm_params.PDwidx && mpm_params.T1widx && ISC
     ii = 0; mtch = false;
     while ~mtch && ii < nsets
         ii = ii+1;
-        % don't check exact equality, but equality to within certain amount
-        % of floating point error
-        if all(abs(MPMacq_prot - MPMacq_sets.vals{ii}) < 5*eps(MPMacq_prot))
+        if all(MPMacq_prot == MPMacq_sets.vals{ii})
             mtch  = true;
             prot_tag = MPMacq_sets.tags{ii};
             hmri_log(sprintf(['INFO: MPM acquisition protocol = %s.' ...
@@ -1325,7 +1316,7 @@ mpm_params.proc.RFsenscorr = jobsubj.sensitivity;
 mpm_params.proc.threshall = hmri_get_defaults('qMRI_maps_thresh');
 % load PD maps processing parameters (including calibr (calibration
 % parameter) and T2scorr (T2s correction) fields)
-mpm_params.proc.PD = hmri_get_defaults('PDproc'); %todo: check user supplied parameters.
+mpm_params.proc.PD = hmri_get_defaults('PDproc');
 % if no RF sensitivity bias correction or no B1 transmit bias correction
 % applied, not worth trying any calibration:
 if (isfield(mpm_params.proc.RFsenscorr,'RF_none')||(isempty(jobsubj.b1_trans_input)&&~mpm_params.UNICORT.PD)) && mpm_params.proc.PD.calibr
@@ -1473,12 +1464,12 @@ if (mpm_params.T1widx && mpm_params.PDwidx)
             (~isempty(jobsubj.b1_trans_input)|| mpm_params.UNICORT.PD)
         mpm_params.output(coutput).suffix = 'PD';
         mpm_params.output(coutput).descrip{1} = 'PD map (water concentration) [p.u.]';
-        mpm_params.output(coutput).descrip{end+1} = sprintf('- WM calibration (%g%%)', mpm_params.proc.PD.WMval);
+        mpm_params.output(coutput).descrip{end+1} = '- WM calibration (69%)';
         mpm_params.output(coutput).units = 'p.u.';
     else
         mpm_params.output(coutput).suffix = 'A';
         mpm_params.output(coutput).descrip{1} = 'A map (signal amplitude) [a.u.]';
-        mpm_params.output(coutput).descrip{end+1} = '- no WM calibration';
+        mpm_params.output(coutput).descrip{end+1} = '- no WM calibration (69%)';
         mpm_params.output(coutput).units = 'a.u.';
     end
     switch B1transcorr{1}

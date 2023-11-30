@@ -1,3 +1,4 @@
+function hmri_b1_local_defaults
 % Sets the defaults for B1 bias correction, part of the hMRI toolbox.
 % Consider this file as a template for local settings specifications. 
 % Please read below for details.
@@ -52,7 +53,7 @@ global hmri_def
 hmri_def.b1map.i3D_AFI.b1type = 'i3D_AFI'; 
 hmri_def.b1map.i3D_AFI.b1avail = true; 
 hmri_def.b1map.i3D_AFI.procreq = true; 
-hmri_def.b1map.i3D_AFI.b1acq.TR2TR1ratio = 0.2; % TR of second input volume over TR of first input volume
+hmri_def.b1map.i3D_AFI.b1acq.TR2TR1ratio = 5;
 hmri_def.b1map.i3D_AFI.b1acq.alphanom = 60;
 hmri_def.b1map.i3D_AFI.b1mask.domask = false; % whether to mask using hmri_create_pm_brain_mask.m
 hmri_def.b1map.i3D_AFI.b1mask.fwhm = 5; % options for hmri_create_pm_brain_mask.m
@@ -148,4 +149,4 @@ hmri_def.b1map.rf_map.b1mask.ndilate = 4;
 hmri_def.b1map.rf_map.b1mask.thresh = 0.5;
 hmri_def.b1map.rf_map.b1proc.B1FWHM = 8; % For smoothing. FWHM in mm; set to 0 to disable smoothing
 
-
+end
